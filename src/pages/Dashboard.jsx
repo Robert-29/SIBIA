@@ -12,6 +12,7 @@ import RiskTrendChart from '../components/charts/RiskTrendChart.jsx';
 import CarreraCompareChart from '../components/charts/CarreraCompareChart.jsx';
 import DirectorDashboard from '../components/dashboard/DirectorDashboard.jsx';
 import JefeCarreraDashboard from '../components/dashboard/JefeCarreraDashboard.jsx';
+import TutorDashboard from '../components/dashboard/TutorDashboard.jsx';
 
 import { 
   Users, 
@@ -70,11 +71,7 @@ export default function Dashboard() {
         } 
         
         else if (esTutor) {
-          // Alumnos asignados y alertas activas
-          const alums = await api.get('/alumnos');
-          setAlumnos(alums);
-          const alerts = await api.get('/alertas');
-          setAlertas(alerts.filter(a => a.estado === 'activa'));
+          // El TutorDashboard carga sus propios datos
         } 
         
         else if (esJefeCarrera) {
@@ -218,76 +215,7 @@ export default function Dashboard() {
 
   // 2. Vista Tutor
   if (esTutor) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-text-primary">Panel de Tutorías</h1>
-          <p className="text-text-secondary text-sm">Alumnos bajo tu tutoría y alertas de atención pendientes.</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <StatCard title="Alumnos Asignados" value={alumnos.length} icon={<Users />} />
-          <StatCard title="Alertas Activas" value={alertas.length} icon={<AlertTriangle />} trendType={alertas.length > 0 ? 'down' : 'up'} trend={alertas.length > 0 ? 'Atención' : 'Estable'} />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Listado de alumnos */}
-          <div className="bg-surface border border-border rounded-2xl p-6 shadow-sm lg:col-span-2">
-            <h2 className="text-base font-bold text-text-primary mb-4">Mis Alumnos Asignados</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-border text-text-secondary font-semibold">
-                    <th className="pb-3">Nombre</th>
-                    <th className="pb-3">Matrícula</th>
-                    <th className="pb-3 text-right">Acción</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {alumnos.map(al => (
-                    <tr key={al.id} className="hover:bg-primary-light/30 transition-colors">
-                      <td className="py-3.5 font-medium text-text-primary">
-                        {al.usuarios?.nombre || 'Alumno'}
-                      </td>
-                      <td className="py-3.5 font-mono-data text-xs text-text-secondary">
-                        {al.matricula}
-                      </td>
-                      <td className="py-3.5 text-right">
-                        <Link 
-                          to={`/alumnos/${al.id}`} 
-                          className="bg-primary-light text-primary-dark px-3 py-1.5 rounded-xl font-semibold hover:bg-primary hover:text-white transition-all text-xs"
-                        >
-                          Ver Ficha
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Alertas */}
-          <div className="space-y-4">
-            <h2 className="text-base font-bold text-text-primary">Alertas Recientes</h2>
-            {alertas.length > 0 ? (
-              alertas.map(al => (
-                <AlertCard 
-                  key={al.id} 
-                  alert={al} 
-                  onAcknowledge={() => navigate(`/alumnos/${al.alumno_id}`)}
-                  showActions={false}
-                />
-              ))
-            ) : (
-              <div className="bg-surface border border-border rounded-xl p-4 text-center text-text-secondary text-sm">
-                No hay alertas activas.
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
+    return <TutorDashboard />;
   }
 
   // 3. Vista Jefe de Carrera — Dashboard completo
