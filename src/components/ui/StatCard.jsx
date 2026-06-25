@@ -1,9 +1,9 @@
 import React from 'react';
 
-export default function StatCard({ title, value, icon, trend, trendType = 'neutral' }) {
+export default function StatCard({ title, value, icon, trend, trendColor = 'neutral' }) {
   const getTrendColor = () => {
-    if (trendType === 'up') return 'text-success bg-success/10 border-success/15';
-    if (trendType === 'down') return 'text-danger bg-danger/10 border-danger/15';
+    if (trendColor === 'good') return 'text-success bg-success/10 border-success/15';
+    if (trendColor === 'bad') return 'text-danger bg-danger/10 border-danger/15';
     return 'text-text-secondary bg-primary-light border-border';
   };
 

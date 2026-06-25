@@ -11,6 +11,7 @@ import alertasRoutes from './routes/alertas.routes.js';
 import iaRoutes from './routes/ia.routes.js';
 import reportesRoutes from './routes/reportes.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import carreraRoutes from './routes/carrera.routes.js';
 
 dotenv.config();
 
@@ -42,6 +43,7 @@ app.use('/api/alertas', alertasRoutes);
 app.use('/api/ia', iaRoutes);
 app.use('/api/reportes', reportesRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/carrera', carreraRoutes);
 
 // Manejador global de errores
 app.use((err, req, res, next) => {

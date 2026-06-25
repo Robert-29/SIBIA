@@ -10,6 +10,8 @@ import RecommendationCard from '../components/ui/RecommendationCard.jsx';
 import AlertCard from '../components/ui/AlertCard.jsx';
 import RiskTrendChart from '../components/charts/RiskTrendChart.jsx';
 import CarreraCompareChart from '../components/charts/CarreraCompareChart.jsx';
+import DirectorDashboard from '../components/dashboard/DirectorDashboard.jsx';
+import JefeCarreraDashboard from '../components/dashboard/JefeCarreraDashboard.jsx';
 
 import { 
   Users, 
@@ -288,121 +290,19 @@ export default function Dashboard() {
     );
   }
 
-  // 3. Vista Jefe de Carrera
+  // 3. Vista Jefe de Carrera — Dashboard completo
   if (esJefeCarrera) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-text-primary">Panel de Coordinación</h1>
-          <p className="text-text-secondary text-sm">Monitoreo académico estratégico de la carrera.</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <StatCard title="Alumnos Inscritos" value={alumnos.length} icon={<Users />} />
-          <StatCard title="Alertas Activas" value={alertas.length} icon={<AlertTriangle />} />
-          <StatCard title="Índice de Riesgo" value={`${Math.round((alertas.length / (alumnos.length || 1)) * 100)}%`} icon={<TrendingUp />} />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Distribución Gráfico */}
-          <div className="bg-surface border border-border rounded-2xl p-6 shadow-sm">
-            <h2 className="text-base font-bold text-text-primary mb-4">Riesgo por Categoría (IA)</h2>
-            <RiskTrendChart data={distribucion} />
-          </div>
-
-          {/* Alumnos en Riesgo */}
-          <div className="bg-surface border border-border rounded-2xl p-6 shadow-sm lg:col-span-2">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-base font-bold text-text-primary">Estudiantes con Alerta Activa</h2>
-              <Link to="/alumnos" className="text-primary-dark font-semibold text-xs hover:underline">Ver todos</Link>
-            </div>
-            <div className="space-y-3">
-              {alumnos.slice(0, 4).map(al => (
-                <div key={al.id} className="flex items-center justify-between p-3 border border-border rounded-xl hover:bg-primary-light/20 transition-all">
-                  <div>
-                    <h4 className="text-sm font-semibold text-text-primary">{al.usuarios?.nombre}</h4>
-                    <p className="text-xs text-text-secondary">Matrícula: {al.matricula} | Promedio: {al.promedio_general}</p>
-                  </div>
-                  <Link 
-                    to={`/alumnos/${al.id}`} 
-                    className="text-xs font-semibold bg-primary-light text-primary-dark hover:bg-primary hover:text-white px-3 py-1.5 rounded-xl transition-all"
-                  >
-                    Ver Expediente
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <JefeCarreraDashboard />;
   }
 
   // 4. Vista Director/Admin
+  if (esDirector || esAdmin) {
+    return <DirectorDashboard kpis={kpis} iaResumen={iaResumen} />;
+  }
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-text-primary">Panel de Inteligencia Institucional</h1>
-        <p className="text-text-secondary text-sm">Resumen global estratégico de la institución educativa.</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard title="Matrícula Total" value={kpis?.total_alumnos || 0} icon={<Users />} />
-        <StatCard title="Promedio General" value={kpis?.promedio_general || 0} icon={<GraduationCap />} />
-        <StatCard title="Alertas Activas" value={kpis?.alertas_activas || 0} icon={<AlertTriangle />} />
-      </div>
-
-      {/* Resumen Ejecutivo IA */}
-      {iaResumen && (
-        <div className="bg-surface border border-border rounded-2xl p-6 shadow-sm space-y-4">
-          <div className="flex items-center gap-2 border-b border-border pb-3">
-            <Sparkles className="text-primary-dark animate-pulse" size={20} />
-            <h2 className="text-base font-bold text-text-primary">Resumen Estratégico AI (XAI)</h2>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="space-y-1">
-              <span className="text-xs font-bold text-text-secondary uppercase">KPI de Riesgo</span>
-              <p className="text-sm text-text-primary font-medium">{iaResumen.kpi_riesgo_general}</p>
-            </div>
-            <div className="space-y-1">
-              <span className="text-xs font-bold text-text-secondary uppercase">Carrera Crítica</span>
-              <p className="text-sm text-text-primary font-medium">{iaResumen.carreras_criticas}</p>
-            </div>
-            <div className="space-y-1">
-              <span className="text-xs font-bold text-text-secondary uppercase">Tendencias Generales</span>
-              <p className="text-sm text-text-primary font-medium">{iaResumen.tendencias_semestre}</p>
-            </div>
-          </div>
-          <div className="bg-primary-light/40 border border-primary/20 p-4 rounded-xl space-y-2">
-            <span className="text-xs font-bold text-primary-dark uppercase">Recomendaciones del Sistema</span>
-            <ul className="list-disc pl-4 space-y-1 text-sm text-text-primary font-medium">
-              {iaResumen.recomendaciones_estrategicas?.map((rec, idx) => (
-                <li key={idx}>{rec}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Gráfico Comparativa */}
-        <div className="bg-surface border border-border rounded-2xl p-6 shadow-sm">
-          <h2 className="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
-            <GraduationCap size={18} className="text-primary-dark" />
-            Promedio General por Carrera
-          </h2>
-          <CarreraCompareChart data={comparativa} />
-        </div>
-
-        {/* Distribución General */}
-        <div className="bg-surface border border-border rounded-2xl p-6 shadow-sm">
-          <h2 className="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
-            <TrendingUp size={18} className="text-primary-dark" />
-            Distribución de Alumnos por Riesgo
-          </h2>
-          <RiskTrendChart data={distribucion} />
-        </div>
-      </div>
+    <div className="h-full flex items-center justify-center text-text-secondary">
+      No tienes un rol asignado válido.
     </div>
   );
 }
