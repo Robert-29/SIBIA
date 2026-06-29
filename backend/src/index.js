@@ -13,6 +13,7 @@ import reportesRoutes from './routes/reportes.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import carreraRoutes from './routes/carrera.routes.js';
 import tutorRoutes from './routes/tutor.routes.js';
+import profesorRoutes from './routes/profesor.routes.js';
 
 dotenv.config();
 
@@ -46,6 +47,7 @@ app.use('/api/reportes', reportesRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/carrera', carreraRoutes);
 app.use('/api/tutor', tutorRoutes);
+app.use('/api/profesor', profesorRoutes);
 
 // Manejador global de errores
 app.use((err, req, res, next) => {

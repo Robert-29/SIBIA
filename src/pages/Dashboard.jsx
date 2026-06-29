@@ -13,6 +13,7 @@ import CarreraCompareChart from '../components/charts/CarreraCompareChart.jsx';
 import DirectorDashboard from '../components/dashboard/DirectorDashboard.jsx';
 import JefeCarreraDashboard from '../components/dashboard/JefeCarreraDashboard.jsx';
 import TutorDashboard from '../components/dashboard/TutorDashboard.jsx';
+import ProfesorDashboard from '../components/dashboard/ProfesorDashboard.jsx';
 
 import { 
   Users, 
@@ -30,7 +31,7 @@ import {
 
 export default function Dashboard() {
   const { user } = useContext(AuthContext);
-  const { esAlumno, esTutor, esJefeCarrera, esDirector, esAdmin } = useRol();
+  const { esAlumno, esTutor, esJefeCarrera, esDirector, esAdmin, esProfesor } = useRol();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
@@ -216,6 +217,11 @@ export default function Dashboard() {
   // 2. Vista Tutor
   if (esTutor) {
     return <TutorDashboard />;
+  }
+
+  // 2b. Vista Profesor
+  if (esProfesor) {
+    return <ProfesorDashboard />;
   }
 
   // 3. Vista Jefe de Carrera — Dashboard completo
