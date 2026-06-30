@@ -3,6 +3,7 @@ import {
   obtenerUsuarios,
   crearUsuario,
   actualizarUsuario,
+  eliminarUsuario,
   obtenerAuditLogs,
   ejecutarSeeding
 } from '../controllers/admin.controller.js';
@@ -16,6 +17,7 @@ router.use(verificarToken);
 router.get('/usuarios', verificarRol(['administrador']), obtenerUsuarios);
 router.post('/usuarios', verificarRol(['administrador']), crearUsuario);
 router.put('/usuarios/:id', verificarRol(['administrador']), actualizarUsuario);
+router.delete('/usuarios/:id', verificarRol(['administrador']), eliminarUsuario);
 router.get('/logs', verificarRol(['administrador']), obtenerAuditLogs);
 router.post('/seed', verificarRol(['administrador']), ejecutarSeeding);
 

@@ -5,7 +5,7 @@ export const obtenerAlertas = async (req, res) => {
     const { id: userId, rol } = req.user;
     let query = supabase
       .from('alertas')
-      .select('*, alumno:alumnos(*, usuario:usuarios(nombre), carrera:carreras(nombre)), asignado:usuarios(nombre)')
+      .select('*, alumno:alumnos(id, matricula, usuario:usuarios!alumnos_usuario_id_fkey(nombre, email), carrera:carreras(nombre)), asignado:usuarios!alertas_asignada_a_fkey(nombre)')
       .order('created_at', { ascending: false });
 
     // Filtrar según el rol
@@ -35,6 +35,9 @@ export const obtenerAlertas = async (req, res) => {
       } else {
         return res.status(200).json([]);
       }
+    } else if (rol === 'psicologo') {
+      // El psicólogo solo puede ver alertas de tipo bienestar o asignadas a él
+      query = query.or(`tipo.eq.bienestar,asignada_a.eq.${userId}`);
     }
 
     const { data: alertas, error } = await query;

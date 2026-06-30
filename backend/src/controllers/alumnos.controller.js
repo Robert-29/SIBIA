@@ -36,8 +36,13 @@ const verificarAccesoAlumno = async (req, alumnoId) => {
   }
 
   if (rol === 'psicologo') {
-    // Psicólogo tiene acceso a alumnos con alertas tipo bienestar o que ya tengan seguimientos registrados
-    const { data: alerta } = await supabase.from('alertas').select('id').eq('alumno_id', alumnoId).maybeSingle();
+    // Psicólogo tiene acceso si hay alertas asociadas al alumno (bienestar o asignadas al psicólogo)
+    const { data: alerta } = await supabase
+      .from('alertas')
+      .select('id')
+      .eq('alumno_id', alumnoId)
+      .or(`tipo.eq.bienestar,asignada_a.eq.${userId}`)
+      .maybeSingle();
     return !!alerta;
   }
 
@@ -75,7 +80,10 @@ export const obtenerAlumnos = async (req, res) => {
         return res.status(200).json([]);
       }
     } else if (rol === 'psicologo') {
-      const { data: alertas } = await supabase.from('alertas').select('alumno_id');
+      const { data: alertas } = await supabase
+        .from('alertas')
+        .select('alumno_id')
+        .or(`tipo.eq.bienestar,asignada_a.eq.${userId}`);
       if (alertas && alertas.length > 0) {
         query = query.in('id', [...new Set(alertas.map(a => a.alumno_id))]);
       } else {
@@ -243,6 +251,7 @@ export const guardarBienestarAlumno = async (req, res) => {
 export const obtenerSeguimientosAlumno = async (req, res) => {
   try {
     const { id } = req.params;
+    const { rol } = req.user;
     const tieneAcceso = await verificarAccesoAlumno(req, id);
     if (!tieneAcceso) return res.status(403).json({ error: 'Acceso denegado.' });
 
@@ -251,11 +260,18 @@ export const obtenerSeguimientosAlumno = async (req, res) => {
     if (alertError) throw alertError;
     if (!alertas || alertas.length === 0) return res.status(200).json([]);
 
-    const { data: seguimientos, error: segError } = await supabase
+    let query = supabase
       .from('seguimientos')
       .select('*, usuario:usuarios(nombre), alerta:alertas(tipo, descripcion, id)')
       .in('alerta_id', alertas.map(a => a.id))
       .order('fecha', { ascending: false });
+
+    // Si NO es psicólogo o administrador, no debe poder ver los seguimientos clínicos/psicológicos
+    if (rol !== 'psicologo' && rol !== 'administrador') {
+      query = query.neq('tipo', 'psicologia');
+    }
+
+    const { data: seguimientos, error: segError } = await query;
 
     if (segError) throw segError;
     return res.status(200).json(seguimientos);

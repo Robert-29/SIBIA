@@ -76,6 +76,39 @@ export const actualizarUsuario = async (req, res) => {
   }
 };
 
+export const eliminarUsuario = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { id: userId } = req.user;
+
+    // No permitir auto-eliminarse
+    if (id === userId) {
+      return res.status(400).json({ error: 'No puedes eliminar tu propia cuenta de administrador.' });
+    }
+
+    const { error } = await supabase
+      .from('usuarios')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    await supabase.from('audit_logs').insert([
+      {
+        usuario_id: userId,
+        accion: `Eliminó usuario ID ${id}`,
+        tabla_afectada: 'usuarios',
+        registro_id: id.toString()
+      }
+    ]);
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Error en eliminarUsuario:', error);
+    return res.status(500).json({ error: 'Error al eliminar el usuario.' });
+  }
+};
+
 export const obtenerAuditLogs = async (req, res) => {
   try {
     const { data, error } = await supabase

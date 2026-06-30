@@ -16,6 +16,8 @@ import TutorDashboard from '../components/dashboard/TutorDashboard.jsx';
 import ProfesorDashboard from '../components/dashboard/ProfesorDashboard.jsx';
 
 import AlumnoDashboard from '../components/dashboard/AlumnoDashboard.jsx';
+import PsicologoDashboard from '../components/dashboard/PsicologoDashboard.jsx';
+import AdminDashboard from '../components/dashboard/AdminDashboard.jsx';
 
 import { 
   Users, 
@@ -33,7 +35,7 @@ import {
 
 export default function Dashboard() {
   const { user } = useContext(AuthContext);
-  const { esAlumno, esTutor, esJefeCarrera, esDirector, esAdmin, esProfesor } = useRol();
+  const { esAlumno, esTutor, esJefeCarrera, esDirector, esAdmin, esProfesor, esPsicologo } = useRol();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
@@ -149,13 +151,23 @@ export default function Dashboard() {
     return <ProfesorDashboard />;
   }
 
+  // 2c. Vista Psicologo
+  if (esPsicologo) {
+    return <PsicologoDashboard />;
+  }
+
   // 3. Vista Jefe de Carrera — Dashboard completo
   if (esJefeCarrera) {
     return <JefeCarreraDashboard />;
   }
 
-  // 4. Vista Director/Admin
-  if (esDirector || esAdmin) {
+  // 4. Vista Admin — CRUD completo
+  if (esAdmin) {
+    return <AdminDashboard />;
+  }
+
+  // 5. Vista Director
+  if (esDirector) {
     return <DirectorDashboard kpis={kpis} iaResumen={iaResumen} />;
   }
 
