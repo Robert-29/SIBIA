@@ -15,6 +15,8 @@ import JefeCarreraDashboard from '../components/dashboard/JefeCarreraDashboard.j
 import TutorDashboard from '../components/dashboard/TutorDashboard.jsx';
 import ProfesorDashboard from '../components/dashboard/ProfesorDashboard.jsx';
 
+import AlumnoDashboard from '../components/dashboard/AlumnoDashboard.jsx';
+
 import { 
   Users, 
   GraduationCap, 
@@ -128,89 +130,12 @@ export default function Dashboard() {
   // 1. Vista Alumno
   if (esAlumno) {
     return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center bg-surface border border-border p-6 rounded-2xl shadow-sm">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-text-primary">Hola, {user?.nombre}</h1>
-            <p className="text-text-secondary text-sm">
-              Expediente de Bienestar e Inteligencia Académica | Matrícula: {alumnoDetalle?.matricula}
-            </p>
-          </div>
-          {alumnoRiesgo && (
-            <div className="text-right">
-              <p className="text-xs text-text-secondary font-semibold uppercase mb-1">Nivel de Riesgo IA</p>
-              <RiskBadge nivel={alumnoRiesgo.nivel_riesgo} size="lg" />
-            </div>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <StatCard 
-            title="Promedio General" 
-            value={alumnoDetalle?.promedio_general || 'N/A'} 
-            icon={<GraduationCap />} 
-            trend="Estable" 
-          />
-          <StatCard 
-            title="Semestre Actual" 
-            value={alumnoDetalle?.semestre_actual || '1'} 
-            icon={<Calendar />} 
-          />
-          <StatCard 
-            title="Horas de Sueño" 
-            value={bienestarForm?.horas_sueno ? `${bienestarForm.horas_sueno}h` : '7.0h'} 
-            icon={<Clock />} 
-          />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Factores XAI */}
-          <div className="bg-surface border border-border rounded-2xl p-6 shadow-sm">
-            <h2 className="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
-              <TrendingUp size={18} className="text-primary-dark" />
-              Factores de Riesgo Explicables (IA)
-            </h2>
-            <div className="space-y-1">
-              {alumnoRiesgo?.factores_json && alumnoRiesgo.factores_json.length > 0 ? (
-                alumnoRiesgo.factores_json.map((f, i) => (
-                  <RiskBar 
-                    key={i} 
-                    nombre={f.nombre} 
-                    contribucion={f.contribucion} 
-                    valor={f.valor} 
-                    umbral={f.umbral} 
-                    tendencia={f.tendencia}
-                  />
-                ))
-              ) : (
-                <p className="text-sm text-text-secondary">No hay factores de riesgo activos.</p>
-              )}
-            </div>
-          </div>
-
-          {/* Recomendaciones */}
-          <div className="bg-surface border border-border rounded-2xl p-6 shadow-sm">
-            <h2 className="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
-              <Sparkles size={18} className="text-primary-dark" />
-              Recomendaciones del Sistema
-            </h2>
-            <div className="space-y-3">
-              {alumnoRiesgo?.recomendaciones_json && alumnoRiesgo.recomendaciones_json.length > 0 ? (
-                alumnoRiesgo.recomendaciones_json.map((r, i) => (
-                  <RecommendationCard 
-                    key={i} 
-                    tipo={r.tipo} 
-                    descripcion={r.descripcion} 
-                    prioridad={r.prioridad} 
-                  />
-                ))
-              ) : (
-                <p className="text-sm text-text-secondary">Felicidades, no tienes recomendaciones pendientes.</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+      <AlumnoDashboard
+        user={user}
+        alumnoDetalle={alumnoDetalle}
+        alumnoRiesgo={alumnoRiesgo}
+        bienestarForm={bienestarForm}
+      />
     );
   }
 

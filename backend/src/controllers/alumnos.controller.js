@@ -126,7 +126,7 @@ export const obtenerCalificacionesAlumno = async (req, res) => {
 
     const { data, error } = await supabase
       .from('calificaciones')
-      .select('*, grupos(materia_id, nombre, materias(nombre, codigo))')
+      .select('*, grupos(materia_id, nombre, materias(nombre, codigo), profesor:usuarios!grupos_profesor_id_fkey(nombre))')
       .eq('alumno_id', id)
       .order('parcial', { ascending: true });
 
@@ -146,7 +146,7 @@ export const obtenerAsistenciasAlumno = async (req, res) => {
 
     const { data, error } = await supabase
       .from('asistencias')
-      .select('*, grupos(materias(nombre))')
+      .select('*, grupos(materia_id, nombre, materias(nombre))')
       .eq('alumno_id', id)
       .order('fecha', { ascending: false });
 
@@ -178,20 +178,77 @@ export const obtenerBienestarAlumno = async (req, res) => {
   }
 };
 
+export const guardarBienestarAlumno = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const tieneAcceso = await verificarAccesoAlumno(req, id);
+    if (!tieneAcceso) return res.status(403).json({ error: 'Acceso denegado.' });
+
+    const {
+      nivel_estres,
+      horas_sueno,
+      practica_deporte,
+      frecuencia_deporte,
+      situacion_economica,
+      apoyo_familiar,
+      motivacion_academica,
+      observaciones,
+      respuestas_extendidas,
+      alerta_critica,
+      dimension_completada
+    } = req.body;
+
+    const { data, error } = await supabase
+      .from('formularios_bienestar')
+      .insert([
+        {
+          alumno_id: id,
+          nivel_estres,
+          horas_sueno,
+          practica_deporte,
+          frecuencia_deporte,
+          situacion_economica,
+          apoyo_familiar,
+          motivacion_academica,
+          observaciones,
+          respuestas_extendidas,
+          alerta_critica,
+          dimension_completada
+        }
+      ])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Si hay una alerta crítica en bienestar, podemos registrar una alerta en la tabla de alertas de forma automática para psicología
+    if (alerta_critica) {
+      await supabase.from('alertas').insert([
+        {
+          alumno_id: id,
+          tipo: 'bienestar',
+          descripcion: 'El alumno ha reportado ideación autolesiva o pensamientos de crisis en el formulario de bienestar extendido.',
+          estado: 'activa'
+        }
+      ]);
+    }
+
+    return res.status(201).json(data);
+  } catch (error) {
+    console.error('Error en guardarBienestarAlumno:', error);
+    return res.status(500).json({ error: 'Error al guardar formulario de bienestar.' });
+  }
+};
+
 export const obtenerSeguimientosAlumno = async (req, res) => {
   try {
     const { id } = req.params;
     const tieneAcceso = await verificarAccesoAlumno(req, id);
     if (!tieneAcceso) return res.status(403).json({ error: 'Acceso denegado.' });
 
-    const { data, error } = await supabase
-      .from('seguimientos')
-      .select('*, usuario:usuarios(nombre), alerta:alertas(tipo, descripcion)')
-      .order('fecha', { ascending: false })
-      .filter('alerta_id', 'in', `(select id from alertas where alumno_id = '${id}')`);
-
-    // Si la subconsulta nativa falla por compatibilidad o permisos, lo obtenemos en dos pasos:
-    const { data: alertas } = await supabase.from('alertas').select('id').eq('alumno_id', id);
+    // Obtenemos primero los IDs de alertas asociadas al alumno
+    const { data: alertas, error: alertError } = await supabase.from('alertas').select('id').eq('alumno_id', id);
+    if (alertError) throw alertError;
     if (!alertas || alertas.length === 0) return res.status(200).json([]);
 
     const { data: seguimientos, error: segError } = await supabase
